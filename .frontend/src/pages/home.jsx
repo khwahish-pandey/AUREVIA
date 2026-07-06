@@ -9,12 +9,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-slate-100 flex flex-col font-sans">
-      <Navbar
-        loggedInUser={user?.name}
-        onLogout={() => {
-          console.log("logout");
-        }}
-      />
+      <Navbar loggedInUser={user?.name} />
 
       <Hero />
       <BohemianSection />

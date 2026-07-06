@@ -33,11 +33,15 @@ function UserContextProvider({ children }) {
         res.data.user
       );
     } catch (error) {
-      console.error(
-        "Error fetching user profile:",
-        error
-      );
+    // ✅ Check if the error is a 401 Unauthorized (Normal Guest Behavior)
+    if (error.response && error.response.status === 401) {
+      console.log("No active session found. Browsing as Guest.");
+      setUser(null); // Safely keep or set user to null
+    } else {
+      // 🚨 Log other actual errors (like network dropouts or 500 server crashes)
+      console.error("Actual error fetching user profile:", error);
     }
+  }
   };
 
   useEffect(() => {

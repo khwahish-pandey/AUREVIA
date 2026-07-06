@@ -62,15 +62,20 @@ export const loginuser=async(req,res)=>{
         res.status(500).json({message:"Internal server error ${error.message}"}) ;
     }
 }
-export const logout=async(req,res)=>{
+export const logout = async (req, res) => {
     try {
-        res.clearCookie("token");
-        res.status(200).json({message:"User logged out successfully"})
+        // ✅ Pass identical configurations so the browser permits the deletion
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: false, // matches your login settings
+            sameSite: "strict"
+        });
+        
+        return res.status(200).json({ message: "User logged out successfully" });
         
     } catch (error) {
-        console.log("Error in logging out user",error);
-        res.status(500).json({message:"Internal server error ${error.message}"}) ;
-        
+        console.log("Error in logging out user", error);
+        res.status(500).json({ message: `Internal server error ${error.message}` });
     }
 }
 export const googleAuth=async(req,res)=>{

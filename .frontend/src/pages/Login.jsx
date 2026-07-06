@@ -74,6 +74,8 @@ export default function AureviaLuxe() {
       });
       console.log("Server response after Google Sign-In:", res.data);
       setSuccess(true);
+      await getUserProfile(); // Fetch user profile after successful login
+      navigate("/");
       
     } catch (error) {
       console.error("Google Sign-In failed:", error);

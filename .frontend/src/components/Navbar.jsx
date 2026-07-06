@@ -1,6 +1,9 @@
-import React, { use, useState } from "react";
+import React, {  useState } from "react";
 import { useContext } from "react";
 import { UserContext } from "../context/UserContext.jsx";
+import AuthContext from "../context/AuthContext";
+import axios from "axios";
+
 
 // --- INLINE SVG ICONS FOR ZERO DEPENDENCY FRICTION ---
 const ChevronDownIcon = () => (
@@ -153,11 +156,39 @@ const AureviaLogo = () => (
 export function Navbar({ loggedInUser, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  let {user, getUserProfile, setUser}=useContext(UserContext);
+  let {serverurl}=useContext(AuthContext);
 
   const toggleDropdown = (name) => {
     setActiveDropdown(activeDropdown === name ? null : name);
   };
-  const userdata = useContext(UserContext);
+
+  const handellogout = async () => {
+  console.log("Logout clicked");
+
+  // Safe fallback check: If serverurl is undefined due to context nesting, use port 8000
+  const cleanServerUrl = serverurl || "http://localhost:8000";
+  console.log("Targeting Backend URL:", `${cleanServerUrl}/api/auth/logout`);
+
+  try {
+    const result = await axios.get(`${cleanServerUrl}/api/auth/logout`, {
+      withCredentials: true,
+    });
+    
+    console.log("Backend Response:", result.data);
+    
+    // Clear local state manually so UI updates instantly
+    setUser(null);
+    
+    // Refresh context data
+    await getUserProfile();
+  } catch (err) {
+    console.error("Logout Network Error:", err);
+  }
+};
+
+
+
 
   return (
     <header className="w-full bg-[#3d5a45] text-white font-sans border-b border-[#4d6a55] select-none shadow-md">
@@ -367,43 +398,48 @@ export function Navbar({ loggedInUser, onLogout }) {
 </div>
 
             {/* Dynamic Authenticated User Container */}
-            {loggedInUser ? (
-              <div className="flex items-center gap-3 bg-emerald-950/20 hover:bg-emerald-950/35 border border-[#4d6a55] rounded-full p-1 pr-4 transition-all duration-300">
-                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
-                  <UserIcon />
-                </div>
+{/* Dynamic Authenticated User Container */}
+{user ? (
+  <div className="flex items-center gap-3 bg-emerald-950/20 hover:bg-emerald-950/35 border border-[#4d6a55] rounded-full p-1 pr-4 transition-all duration-300">
+    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
+      <UserIcon />
+    </div>
 
-                <div className="flex flex-col text-left">
-                  <span className="text-[9px] text-emerald-200/80 uppercase font-bold tracking-wider leading-none mb-0.5">
-                    Logged In
-                  </span>
+    <div className="flex flex-col text-left">
+      <span className="text-[9px] text-emerald-200/80 uppercase font-bold tracking-wider leading-none mb-0.5">
+        Logged In
+      </span>
 
-                  <span
-                    className="text-xs font-semibold max-w-30 truncate text-white"
-                    title={loggedInUser}
-                  >
-                    {loggedInUser || "User"}
-                  </span>
-                </div>
+      <span
+        className="text-xs font-semibold max-w-30 truncate text-white"
+        title={user.name}
+      >
+        {user.name || "User"}
+      </span>
+    </div>
 
-                <button
-                  onClick={onLogout}
-                  className="ml-2 text-[10px] text-[#d4845a] hover:text-[#d4845a] underline font-light transition-all"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 bg-emerald-950/20 border border-[#4d6a55]/80 rounded-full px-3 py-1.5">
-                <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-[#d4845a]"></div>
-                </div>
-                <span className="text-xs font-medium text-emerald-100">
-                  Guest Visitor
-                </span>
-              </div>
-            )}
-
+    <button
+      type="button"
+      onClick={handellogout}
+      className="ml-2 text-[10px] text-[#d4845a] underline font-light transition-all hover:text-amber-400"
+    >
+      Logout
+    </button>
+  </div>
+) : (
+  /* --- GUEST LOG IN LINK CONTROLLER --- */
+  <a 
+    href="/login" 
+    className="flex items-center gap-2 bg-emerald-950/20 hover:bg-emerald-950/40 border border-[#4d6a55]/80 hover:border-amber-400/50 rounded-full px-3 py-1.5 transition-all duration-200 group cursor-pointer"
+  >
+    <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center transition-colors group-hover:bg-amber-400/20">
+      <div className="w-2 h-2 rounded-full bg-[#d4845a] group-hover:bg-amber-400 transition-colors"></div>
+    </div>
+    <span className="text-xs font-medium text-emerald-100 group-hover:text-white transition-colors">
+      Guest Visitor <span className="text-[#d4845a] ml-1  group-hover:underline">Login </span>
+    </span>
+  </a>
+)}
             {/* Interactive Cart Button Pills */}
             <button className="flex items-center gap-2 hover:bg-white hover:text-[#3d5a45] transition-all border border-white/80 rounded-full px-4.5 py-2 text-sm font-medium shadow-sm">
               <CartIcon />
@@ -427,63 +463,105 @@ export function Navbar({ loggedInUser, onLogout }) {
         <div className="xl:hidden border-t border-[#4d6a55] bg-[#344d3b] px-6 py-4 animate-fadeIn transition-all duration-300">
           <nav className="flex flex-col gap-3 font-medium">
             {/* All Categories Accordion */}
-            <div>
+            <div className="border-b border-[#4d6a55]/40 pb-2">
               <button
                 onClick={() => toggleDropdown("categories")}
-                className="flex items-center justify-between w-full py-2 hover:text-[#d4845a] transition-colors"
+                className="flex items-center justify-between w-full py-2 text-white hover:text-[#d4845a] transition-colors"
               >
                 <span>All Categories</span>
                 <ChevronDownIcon />
               </button>
               {activeDropdown === "categories" && (
-                <div className="pl-4 mt-1 flex flex-col gap-2 text-sm text-emerald-200 border-l border-emerald-700/60">
-                  <a href="#men" className="hover:text-white py-1">
+                <div className="pl-4 mt-1 flex flex-col gap-2 text-sm text-emerald-200 border-l border-emerald-700/60 bg-[#2d4233]/40 rounded-r-md py-2">
+                  <a href="#men" className="hover:text-white py-1 block">
                     Men's Wear
                   </a>
-                  <a href="#women" className="hover:text-white py-1">
+                  <a href="#women" className="hover:text-white py-1 block">
                     Women's Collection
                   </a>
-                  <a href="#kids" className="hover:text-white py-1">
+                  <a href="#kids" className="hover:text-white py-1 block">
                     Kids clothing
+                  </a>
+                  <a href="#accessories" className="hover:text-white py-1 block">
+                    Fashion Accessories
                   </a>
                 </div>
               )}
             </div>
 
             {/* Products Accordion */}
-            <div>
+            <div className="border-b border-[#4d6a55]/40 pb-2">
               <button
                 onClick={() => toggleDropdown("products")}
-                className="flex items-center justify-between w-full py-2 hover:text-amber-300 transition-colors"
+                className="flex items-center justify-between w-full py-2 text-white hover:text-[#d4845a] transition-colors"
               >
                 <span>Products</span>
                 <ChevronDownIcon />
               </button>
               {activeDropdown === "products" && (
-                <div className="pl-4 mt-1 flex flex-col gap-2 text-sm text-emerald-200 border-l border-emerald-700/60">
-                  <a href="#new" className="hover:text-white py-1">
+                <div className="pl-4 mt-1 flex flex-col gap-2 text-sm text-emerald-200 border-l border-emerald-700/60 bg-[#2d4233]/40 rounded-r-md py-2">
+                  <a href="#new" className="hover:text-white py-1 block">
                     New Arrivals
                   </a>
-                  <a href="#featured" className="hover:text-white py-1">
+                  <a href="#featured" className="hover:text-white py-1 block">
                     Featured Items
+                  </a>
+                  <a href="#discounts" className="hover:text-white py-1 block">
+                    Hot Deals %
                   </a>
                 </div>
               )}
             </div>
 
-            {/* Static links */}
-           
+            {/* Pages Accordion */}
+            <div className="border-b border-[#4d6a55]/40 pb-2">
+              <button
+                onClick={() => toggleDropdown("pages")}
+                className="flex items-center justify-between w-full py-2 text-white hover:text-[#d4845a] transition-colors"
+              >
+                <span>Pages</span>
+                <ChevronDownIcon />
+              </button>
+              {activeDropdown === "pages" && (
+                <div className="pl-4 mt-1 flex flex-col gap-2 text-sm text-emerald-200 border-l border-emerald-700/60 bg-[#2d4233]/40 rounded-r-md py-2">
+                  <a href="#shop" className="hover:text-white py-1 block">
+                    Shop Catalog
+                  </a>
+                  <a href="#order" className="hover:text-white py-1 block">
+                    Track Order
+                  </a>
+                  <a href="#contact" className="hover:text-white py-1 block">
+                    Contact Support
+                  </a>
+                </div>
+              )}
+            </div>
 
-           
-
-            {/* Appointment for Mobile */}
             {/* Mobile Search */}
-            <div className="mt-4 pt-4 border-t border-[#4d6a55]/60">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="w-full px-4 py-2 rounded-lg text-gray-800 bg-white focus:outline-none"
-              />
+            <div className="mt-2 pt-2">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className="w-full h-10 rounded-full bg-white text-gray-800 pl-5 pr-11 text-sm border border-transparent shadow-md focus:outline-none"
+                />
+                <button className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-[#d4845a] flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                    stroke="currentColor"
+                    className="w-4 h-4 text-[#3d5a45]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 6 16.65a7.5 7.5 0 0 0 10.65 0Z"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </nav>
         </div>
