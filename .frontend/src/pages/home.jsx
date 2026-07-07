@@ -3,7 +3,7 @@ import { UserContext } from "../context/UserContext.jsx";
 import { Navbar } from "../components/Navbar";
 import Hero from "../components/Hero.jsx";
 import BohemianSection from "../components/Slider1.jsx";
-
+import FashionCarousel from "../components/card.jsx";
 export default function Home() {
   const { user } = useContext(UserContext);
 
@@ -13,6 +13,7 @@ export default function Home() {
 
       <Hero />
       <BohemianSection />
+      <FashionCarousel/>
 
       <main className="flex-grow flex flex-col items-center justify-center p-6 text-center"></main>
     </div>

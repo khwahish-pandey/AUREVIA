@@ -12,7 +12,7 @@ const app = express();
 
 // 1. CORS MUST come first
 app.use(cors({
-    origin: "http://localhost:5173", // Ensure this matches your Vite port exactly
+    origin: ["http://localhost:5173","http://localhost:5174"], // Ensure this matches your Vite port exactly
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]

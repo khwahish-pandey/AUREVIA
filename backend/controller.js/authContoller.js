@@ -1,7 +1,7 @@
 import validator from "validator";
 import User from "../model/userModel.js";
 import bcrypt from "bcryptjs";
-import { generateToken } from "../config/token.js";
+import { generateToken ,generateToken1} from "../config/token.js";
 export const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -103,3 +103,26 @@ export const googleAuth=async(req,res)=>{
         res.status(500).json({message:"Internal server error ${error.message}"}) ;
     }
 }
+export const adminlogin=async(req,res)=>{
+    try {
+        const {email,password}=req.body;
+        if(email===process.env.ADMIN_EMAIL && password===process.env.ADMIN_PASSWORD){
+            const token=await generateToken1(email);
+            res.cookie("token",token,{
+                httpOnly:true,
+                secure:false,
+                sameSite:"strict",
+                maxAge:7*24*60*60*1000
+            })
+            return res.status(200).json({message:"Admin logged in successfully"});
+        }else{
+            return res.status(401).json({message:"Invalid credentials"});
+        }
+        
+    } catch (error) {
+        console.log("Error in admin login",error);
+        res.status(500).json({message:"Internal server error ${error.message}"}) ;
+        
+    }
+}
+   
