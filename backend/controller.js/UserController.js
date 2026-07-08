@@ -14,3 +14,16 @@ export const getUserProfile = async(req,res)=>{
         
     }
 }
+export const currAdmin=async(req,res)=>{
+    try {
+      let adminemail=req.adminemail;
+      if(!adminemail){
+        return res.status(404).json({message:"Admin not found"});
+      } 
+      return res.status(200).json({adminemail});
+    } catch (error) {
+        console.log("Error in getting admin profile",error);
+        return res.status(500).json({message:"Internal server error"});
+        
+    }
+}

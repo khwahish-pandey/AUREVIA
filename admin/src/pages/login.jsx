@@ -69,15 +69,16 @@ export default function AureviaLuxe() {
       );
       console.log("Login successful", res.data);
       setSuccess(true);
+      alert("BACKEND DATA: " + JSON.stringify(res.data, null, 2));
       
       if (getUserProfile) {
         await getUserProfile(); 
       }
       
       // Delay navigation slightly so the customer sees your success overlay animations
-      setTimeout(() => {
-        navigate("/"); 
-      }, 1500);
+    //   setTimeout(() => {
+    //     navigate("/"); 
+    //   }, 1500);
     } catch (error) {
       console.error("Error in logging in user", error);
     } finally {
