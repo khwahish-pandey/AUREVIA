@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
 import { AuthProvider } from './context/AuthContext.jsx'
 import UserContext from './context/UserContext.jsx'
+import ShopProvider  from './context/ShopContext.jsx'
 
 
 
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')).render(
       {/* 2. Use AuthProvider to wrap the app */}
       <AuthProvider>
         <UserContext>
-          <App />
+          <ShopProvider>
+        <App />
+      </ShopProvider>
         </UserContext>
       </AuthProvider>
     </React.StrictMode>

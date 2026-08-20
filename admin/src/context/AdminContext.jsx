@@ -1,48 +1,83 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-// Import the raw context object, not the component provider wrapper!
-import { AuthContext } from './AuthContext.jsx'; 
+
+console.log("🔥 ADMIN CONTEXT FILE LOADED");
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+} from "react";
+
+import { AuthContext } from "./AuthContext.jsx";
 
 export const AdminContext = createContext();
 
-function AdmincontextProvider({ children }) { // Updated parameter to lower-case 'children'
+function AdmincontextProvider({ children }) {
   const [adminData, setAdminData] = useState(null);
-  
-  // Correctly target and extract serverurl from AuthContext
-  const { serverurl } = useContext(AuthContext) || {};  
+  const [adminLoading, setAdminLoading] = useState(true);
+
+  const { serverurl } = useContext(AuthContext) || {};
+  console.log("ADMIN CONTEXT LOADED");
+console.log("SERVER URL:", serverurl);
+
 
   const fetchAdminData = async () => {
-    if (!serverurl) return; // Prevent calling if context isn't fully ready yet
+    if (!serverurl) {
+      console.log("NO SERVER URL - RETURNING");
+    }
+
     try {
-      const response = await fetch(`${serverurl}/api/user/adminprofile`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Securely send session tracking cookies
-      });
+      setAdminLoading(true);
+
+      const response = await fetch(
+        `${serverurl}/api/user/adminprofile`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+       console.log("ADMIN PROFILE STATUS:", response.status);
+
 
       if (!response.ok) {
-        throw new Error('Failed to fetch admin data');
+        setAdminData(null);
+        return;
       }
 
       const data = await response.json();
+
+      console.log("ADMIN PROFILE RESPONSE:", data);
+
+      // If backend returns { admin: {...} }
       setAdminData(data.admin);
+
     } catch (error) {
-      console.error('Error fetching admin data:', error);
+      console.error("Admin profile error:", error);
+        setAdminData(null);
+    } finally {
+      setAdminLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAdminData();
-  }, [serverurl]); // Re-run if serverurl boots up dynamically
+     console.log("ADMIN CONTEXT useEffect RUNNING");
+    console.log("serverurl in useEffect:", serverurl);
 
-  const value = {
-    adminData,
-    fetchAdminData,
-    setAdminData,
-    serverurl
-  };
+    if (serverurl) {
+      fetchAdminData();
+    }
+  }, [serverurl]);
 
   return (
-    <AdminContext.Provider value={value}> {/* Passed the value state pipeline down */}
+    <AdminContext.Provider
+      value={{
+        adminData,
+        setAdminData,
+        fetchAdminData,
+        adminLoading,
+        serverurl,
+      }}
+    >
       {children}
     </AdminContext.Provider>
   );

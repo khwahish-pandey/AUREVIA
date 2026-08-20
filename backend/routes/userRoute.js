@@ -1,7 +1,7 @@
 import express from 'express';
-import { getUserProfile } from '../controller.js/UserController.js';
+import { getUserProfile } from '../controller/UserController.js';
 import { isUserAuthenticated } from '../middleware/isAuth.js';
-import { currAdmin } from '../controller.js/UserController.js';
+import { currAdmin } from '../controller/UserController.js';
 import  adminAuth  from '../middleware/adminAuth.js';
 
 const userRoute=express.Router();

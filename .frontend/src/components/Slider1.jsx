@@ -130,11 +130,11 @@ export default function BohemianSection() {
               </p>
 
               <div className="flex flex-wrap gap-4">
-                <a href="/" className="outline-btn">
+                <a href="/profile/collection?category=Men" className="outline-btn">
                   Men <BagIcon />
                 </a>
 
-                <a href="/" className="outline-btn">
+                <a href="/profile/collection?category=Women" className="outline-btn">
                   Women <BagIcon />
                 </a>
               </div>
@@ -162,7 +162,7 @@ export default function BohemianSection() {
                 and a color palette inspired by royal jewels.
               </p>
 
-              <a href="/" className="show-more-link">
+              <a href="/profile/about" className="show-more-link">
                 Show More
               </a>
             </div>

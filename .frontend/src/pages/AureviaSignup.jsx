@@ -65,7 +65,7 @@ export default function AureviaSignup() {
       console.log("Signup successful:", res.data);
       setSuccess(true);
       await getUserProfile(); // Fetch user profile after successful login
-      navigate("/"); 
+      navigate("/profile/main");
     } catch (error) {
   console.log(error.response?.data);
   console.log(error.response?.status);

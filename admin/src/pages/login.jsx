@@ -3,6 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext.jsx"; 
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AdminContext } from "../context/AdminContext.jsx";
+
 
 const eyeOpen = (
   <svg
@@ -48,7 +51,7 @@ export default function AureviaLuxe() {
   const contextData = React.useContext(AuthContext);
   const { getUserProfile, serverurl } = contextData || {};
   const navigate = useNavigate();
-
+const { fetchAdminData } = useContext(AdminContext) || {};
   const handleLoginLogic = async () => {
     // Validation rules
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -69,11 +72,11 @@ export default function AureviaLuxe() {
       );
       console.log("Login successful", res.data);
       setSuccess(true);
-      alert("BACKEND DATA: " + JSON.stringify(res.data, null, 2));
-      
-      if (getUserProfile) {
-        await getUserProfile(); 
-      }
+     
+      await fetchAdminData();
+      setTimeout(() => {
+        navigate("/orders"); 
+      }, 1500);
       
       // Delay navigation slightly so the customer sees your success overlay animations
     //   setTimeout(() => {

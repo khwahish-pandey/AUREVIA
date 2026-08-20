@@ -15,7 +15,7 @@ const CAROUSEL_DATA = [
     normalTitle: "Sartorial Innovation",
     description: '"A Technological Voyage into Sartorial Innovation" is a fashion theme that envisions a dynamic intersection between cutting-edge technology and the realm of clothing design.',
     image: "https://shopping-workdo.myshopify.com/cdn/shop/files/video-banner.png?v=1702021133",
-    link: "/collections/tech-innovation"
+    link: "/profile/collection"
   },
   {
     id: 2,
@@ -24,7 +24,7 @@ const CAROUSEL_DATA = [
     normalTitle: "Sienna & Sand",
     description: "Embrace the warmth of the season with relaxed, lightweight silhouettes crafted from rich, raw linens and terracotta tones.",
     image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80",
-    link: "/collections/summer-edit"
+    link: "/profile/collection"
   },
   {
     id: 3,
@@ -33,7 +33,7 @@ const CAROUSEL_DATA = [
     normalTitle: "Living Garments",
     description: "Where biology meets tailoring: jackets crafted from lab-grown mycelium and textiles designed to capture carbon emissions.",
     image: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1600&q=80",
-    link: "/collections/eco-fabrics"
+    link: "/profile/collection"
   },
   {
     id: 4,
@@ -42,7 +42,7 @@ const CAROUSEL_DATA = [
     normalTitle: "The Nomad Collection",
     description: "A deep dive into cultural heritage preservation featuring intricately detailed macramé overlays and raw geometric fringes.",
     image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1600&q=80",
-    link: "/collections/nomad"
+    link: "/profile/collection"
   },
   {
     id: 5,
@@ -51,7 +51,7 @@ const CAROUSEL_DATA = [
     normalTitle: "Weaving Future Threads",
     description: "Exploring algorithmic knitting and generative patterns that adapt in real-time to environmental stimuli and human emotion.",
     image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1600&q=80",
-    link: "/collections/future-threads"
+    link: "/profile/collection"
   }
 ];
 

@@ -53,7 +53,7 @@ export default function AureviaLuxe() {
       console.log("Login successful", res.data);
       setSuccess(true);
       await getUserProfile(); // Fetch user profile after successful login
-      navigate("/"); // Redirect to home or dashboard after login
+     navigate("/profile/main"); // Redirect to home or dashboard after login
     } catch (error) {
       console.log("Error in logging in user", error);
     } finally {
@@ -75,7 +75,7 @@ export default function AureviaLuxe() {
       console.log("Server response after Google Sign-In:", res.data);
       setSuccess(true);
       await getUserProfile(); // Fetch user profile after successful login
-      navigate("/");
+      navigate("/profile/main");
       
     } catch (error) {
       console.error("Google Sign-In failed:", error);

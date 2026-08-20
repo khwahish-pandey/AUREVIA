@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser,loginuser, logout,googleAuth,adminlogin } from "../controller.js/authContoller.js";
+import { registerUser,loginuser, logout,googleAuth,adminlogin } from "../controller/authContoller.js";
 
 const authroute=express.Router();
 authroute.post("/register",registerUser);

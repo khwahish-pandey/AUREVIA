@@ -18,7 +18,7 @@ function AuthProvider({ children }) {
   // Include both serverurl AND getUserProfile in the context value
   const value = {
     serverurl,
-    getUserProfile, 
+   
   };
 
   return (
