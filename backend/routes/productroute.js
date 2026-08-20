@@ -1,6 +1,6 @@
 import express from "express";
 import upload from "../middleware/multer.js";
-import  {addProduct} from "../controller/ProductController.js";
+import  {addProduct} from "../controller/productController.js";
 import e from "express";
 let productRouter=express.Router();
 import adminAuth from "../middleware/adminAuth.js";
