@@ -4,7 +4,7 @@ import  {addProduct} from "../controller/productController.js";
 import e from "express";
 let productRouter=express.Router();
 import adminAuth from "../middleware/adminAuth.js";
-import { listProduct, removeProduct } from "../controller/ProductController.js";
+import { listProduct, removeProduct } from "../controller/productController.js";
 productRouter.post("/addproduct",upload.fields([{ name: 'image1', maxCount: 1 },
      { name: 'image2', maxCount: 1 }, 
      { name: 'image3', maxCount: 1 }, 
