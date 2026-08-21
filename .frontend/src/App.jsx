@@ -8,6 +8,7 @@ import Home from "./pages/home.jsx";
 import PlaceOrder from "./pages/PlaceOrder.jsx";
 import Ai from "./components/Ai.jsx";
 
+
 function App() {
   return (
     <Routes>
@@ -18,6 +19,7 @@ function App() {
         path="/login"
         element={<Login />}
       />
+      <Route path="/" element={<Home />} />
 
       <Route
         path="/signup"
