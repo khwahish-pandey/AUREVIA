@@ -3,7 +3,7 @@ import React, { createContext } from "react";
 export const AuthContext = createContext();
 
 function AuthProvider({ children }) {
-  const serverurl = "http://localhost:8000";
+  const serverurl = "https://aurevia-2.onrender.com";
 
   // Add the missing function that your login page is expecting!
   const getUserProfile = async () => {
