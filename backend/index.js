@@ -11,6 +11,7 @@ import productRouter from "./routes/productroute.js";
 import cartRouter from "./routes/cartRoutes.js";
 import orderRouter from "./routes/orderroute.js";
 const app = express();
+app.use(cookieParser());
 
 // 1. CORS MUST come first
 app.use(cors({
@@ -21,7 +22,7 @@ app.use(cors({
 // 2. Body Parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Good practice for form data
-app.use(cookieParser());
+
 
 // 3. Optional: Catch JSON parsing errors to prevent terminal crashes
 app.use((err, req, res, next) => {
