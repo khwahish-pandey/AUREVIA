@@ -4,11 +4,13 @@ import bcrypt from "bcryptjs";
 import { generateToken, generateToken1 } from "../config/token.js";
 
 // Shared cookie configuration for localhost dev environment
+const isProduction = process.env.NODE_ENV === "production";
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: true, // Must be false on http://localhost (no HTTPS)
-  sameSite: "none", // CRITICAL: Allows cookies across localhost ports (5173/5174 -> 8000)
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
 export const registerUser = async (req, res) => {
