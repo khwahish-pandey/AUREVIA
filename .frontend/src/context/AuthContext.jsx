@@ -5,7 +5,7 @@ export const AuthContext = createContext();
 
 // 2. Create the Provider component (Naming it AuthProvider avoids conflicts)
 export function AuthProvider({ children }) {
-    const serverurl = "http://localhost:8000";
+    const serverurl = "https://aurevia-2.onrender.com";
     
     // This is the object your Signup page is looking for
     const value = {
