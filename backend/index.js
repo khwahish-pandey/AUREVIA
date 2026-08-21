@@ -13,14 +13,22 @@ import orderRouter from "./routes/orderroute.js";
 const app = express();
 
 // 1. CORS MUST come first
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://aurevia-3.onrender.com"
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://aurevia-3.onrender.com"
-    ],
-    credentials: true
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
   })
 );
 
