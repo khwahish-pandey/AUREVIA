@@ -6,6 +6,8 @@ import { generateToken, generateToken1 } from "../config/token.js";
 // Shared cookie configuration for localhost dev environment
 const isProduction = process.env.NODE_ENV === "production";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: isProduction,
@@ -13,6 +15,7 @@ const COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
+res.cookie("token", token, COOKIE_OPTIONS);
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
