@@ -8,7 +8,7 @@ import AdminContext from './context/AdminContext.jsx';
 
 createRoot(document.getElementById('root')).render(
  
-   <BrowserRouter>
+   <BrowserRouter basename="/admin">
     <AuthProvider>
       <AdminContext>
         <App />
