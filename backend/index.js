@@ -4,8 +4,9 @@ dotenv.config();
 import express from "express";
 import connectDB from "./config/db.js";
 import cookieParser from "cookie-parser";
-import authroute from "./routes/authroute.js";
 import cors from "cors";
+
+import authroute from "./routes/authroute.js";
 import userRoute from "./routes/userRoute.js";
 import productRouter from "./routes/productroute.js";
 import cartRouter from "./routes/cartRoutes.js";
@@ -13,6 +14,7 @@ import orderRouter from "./routes/orderroute.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
+
 
 // =====================================================
 // PATH SETUP
@@ -23,13 +25,13 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Frontend build will be copied to:
-// backend/dist
-const frontendPath = path.join(__dirname, "dist");
 
-console.log("======================================");
-console.log("FRONTEND PATH:", frontendPath);
-console.log("======================================");
+// =====================================================
+// DATABASE
+// =====================================================
+
+connectDB();
+
 
 // =====================================================
 // CORS
@@ -50,86 +52,105 @@ app.use(
   })
 );
 
+
 // =====================================================
-// BODY PARSERS
+// MIDDLEWARE
 // =====================================================
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// =====================================================
-// JSON ERROR HANDLER
-// =====================================================
-
-app.use((err, req, res, next) => {
-  if (
-    err instanceof SyntaxError &&
-    err.status === 400 &&
-    "body" in err
-  ) {
-    console.error("❌ Invalid JSON received");
-
-    return res.status(400).json({
-      success: false,
-      message: "Invalid JSON format",
-    });
-  }
-
-  next(err);
-});
 
 // =====================================================
 // API ROUTES
 // =====================================================
 
 app.use("/api/auth", authroute);
-
 app.use("/api/user", userRoute);
-
 app.use("/api/product", productRouter);
-
 app.use("/api/cart", cartRouter);
-
 app.use("/api/order", orderRouter);
 
+
 // =====================================================
-// BACKEND HEALTH CHECK
+// FRONTEND PATHS
 // =====================================================
 
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Aurevia backend is running",
-  });
+const frontendPath = path.join(
+  __dirname,
+  "../.frontend/dist"
+);
+
+const adminPath = path.join(
+  __dirname,
+  "../admin/dist"
+);
+
+console.log("======================================");
+console.log("FRONTEND PATH:", frontendPath);
+console.log("ADMIN PATH:", adminPath);
+console.log("======================================");
+
+
+// =====================================================
+// ADMIN FRONTEND
+// URL: /admin
+// =====================================================
+
+app.use(
+  "/admin",
+  express.static(adminPath)
+);
+
+
+// =====================================================
+// ADMIN REACT ROUTER FALLBACK
+//
+// /admin
+// /admin/login
+// /admin/orders
+// /admin/page1
+// /admin/page2
+// =====================================================
+
+app.use("/admin", (req, res, next) => {
+  if (req.method !== "GET") {
+    return next();
+  }
+
+  return res.sendFile(
+    path.join(adminPath, "index.html"),
+    (err) => {
+      if (err) {
+        console.error(
+          "❌ Error serving Admin index.html:",
+          err
+        );
+
+        return next(err);
+      }
+    }
+  );
 });
 
-// =====================================================
-// SERVE REACT STATIC FILES
-// =====================================================
-
-console.log("Serving frontend from:", frontendPath);
-
-app.use(express.static(frontendPath));
 
 // =====================================================
-// REACT ROUTER FALLBACK
-// IMPORTANT FOR:
-// /profile
-// /profile/collection
-// /profile/orders
-// /profile/cart
-// /login
-// /signup
-// /products
-// etc.
+// CUSTOMER FRONTEND
 // =====================================================
 
-// Express 5 does NOT support app.get("*")
-// So we use app.use() instead.
+app.use(
+  express.static(frontendPath)
+);
+
+
+// =====================================================
+// CUSTOMER REACT ROUTER FALLBACK
+// =====================================================
 
 app.use((req, res, next) => {
-  // Don't send index.html for API requests
+
+  // Never send frontend index.html for API requests
   if (
     req.method !== "GET" ||
     req.path.startsWith("/api/")
@@ -137,37 +158,40 @@ app.use((req, res, next) => {
     return next();
   }
 
-  const indexPath = path.join(
-    frontendPath,
-    "index.html"
-  );
+  // Don't allow admin requests to reach customer frontend
+  if (req.path.startsWith("/admin")) {
+    return next();
+  }
 
-  console.log(
-    "React route requested:",
-    req.path
-  );
+  return res.sendFile(
+    path.join(frontendPath, "index.html"),
+    (err) => {
+      if (err) {
+        console.error(
+          "❌ Error serving React index.html:",
+          err
+        );
 
-  console.log(
-    "Serving index.html from:",
-    indexPath
-  );
-
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      console.error(
-        "❌ Error serving React index.html:",
-        err
-      );
-
-      return res.status(500).send(
-        "Frontend application could not be loaded."
-      );
+        return next(err);
+      }
     }
-  });
+  );
 });
 
+
 // =====================================================
-// 404 HANDLER
+// ROOT
+// =====================================================
+
+app.get("/", (req, res) => {
+  res.sendFile(
+    path.join(frontendPath, "index.html")
+  );
+});
+
+
+// =====================================================
+// 404
 // =====================================================
 
 app.use((req, res) => {
@@ -177,8 +201,9 @@ app.use((req, res) => {
   });
 });
 
+
 // =====================================================
-// GLOBAL ERROR HANDLER
+// ERROR HANDLER
 // =====================================================
 
 app.use((err, req, res, next) => {
@@ -190,6 +215,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+
 // =====================================================
 // SERVER
 // =====================================================
@@ -200,6 +226,4 @@ app.listen(PORT, () => {
   console.log(
     `🚀 Server running on port ${PORT}`
   );
-
-  connectDB();
 });
