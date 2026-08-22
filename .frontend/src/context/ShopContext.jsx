@@ -57,16 +57,10 @@ function ShopProvider({ children }) {
 
   const getProducts = async () => {
     try {
-      if (!serverurl) {
-        console.log(
-          "❌ SERVER URL NOT AVAILABLE - PRODUCTS NOT LOADED"
-        );
-
-        return;
-      }
+      
 
       const url =
-        `${serverurl}/api/product/listproduct`;
+        `/api/product/listproduct`;
 
       console.log(
         "📦 REQUESTING PRODUCTS:",
