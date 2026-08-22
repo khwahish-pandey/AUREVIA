@@ -45,7 +45,7 @@ function Orders() {
     console.log("================================");
 
     const response = await axios.get(
-      `${serverurl}/api/order/userorders`,
+      `/api/order/userorders`,
       {
         withCredentials: true,
       }
