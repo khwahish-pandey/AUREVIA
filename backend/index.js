@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
-import connectDB from "./config/mongodb.js";
+import connectDB from "./config/token.js";
 
 import authRouter from "./routes/authroute.js";
 import productRouter from "./routes/productroute.js";
