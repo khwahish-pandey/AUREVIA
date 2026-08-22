@@ -29,10 +29,13 @@ const AddItem = () => {
       Data.append(`image${index + 1}`, image);
     });
 
-    const response = await axios.post(
-      `${serverurl}/api/product/addproduct`,
-      Data
-    );
+   const response = await axios.post(
+  `${serverurl}/api/product/addproduct`,
+  Data,
+  {
+    withCredentials: true,
+  }
+);
 
     if (response.status === 200 || response.status === 201) {
       alert("Product added successfully!");
