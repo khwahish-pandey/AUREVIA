@@ -40,8 +40,8 @@ function ShopProvider({ children }) {
   const { value } =
     useContext(AuthContext) || {};
 
-  const serverurl =
-    value?.serverurl;
+
+    const serverurl = "https://aurevia-2.onrender.com";
 
   // =========================================================
   // SHOP SETTINGS
