@@ -513,9 +513,7 @@ export const createRazorpayOrder = async (req, res) => {
 };
 export const verifyrazorpayPayment = async (req, res) => {
   try {
-    console.log(
-      "========== VERIFY RAZORPAY PAYMENT =========="
-    );
+    console.log("========== VERIFY RAZORPAY PAYMENT ==========");
 
     const userId =
       req.user?._id ||
@@ -533,44 +531,26 @@ export const verifyrazorpayPayment = async (req, res) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
+      orderId,
     } = req.body;
 
-    if (!razorpay_order_id) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Razorpay order ID is required",
-      });
-    }
-
+    console.log("DATABASE ORDER ID:", orderId);
+    console.log("RAZORPAY ORDER ID:", razorpay_order_id);
+    console.log("RAZORPAY PAYMENT ID:", razorpay_payment_id);
     console.log(
-      "RAZORPAY ORDER ID:",
-      razorpay_order_id
+      "SIGNATURE RECEIVED:",
+      !!razorpay_signature
     );
 
-    // ==========================================
-    // FETCH RAZORPAY ORDER
-    // ==========================================
-
-    const orderInfo =
-      await razor_pay_instance.orders.fetch(
-        razorpay_order_id
-      );
-
-    console.log(
-      "RAZORPAY ORDER INFO:",
-      orderInfo
-    );
-
-    // ==========================================
-    // CHECK PAYMENT STATUS
-    // ==========================================
-
-    if (orderInfo.status !== "paid") {
+    if (
+      !razorpay_order_id ||
+      !razorpay_payment_id ||
+      !razorpay_signature ||
+      !orderId
+    ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Razorpay payment has not been completed",
+        message: "Missing payment verification details",
       });
     }
 
@@ -578,44 +558,81 @@ export const verifyrazorpayPayment = async (req, res) => {
     // FIND OUR DATABASE ORDER
     // ==========================================
 
-    const order =
-      await Order.findById(
-        orderInfo.receipt
-      );
+    const order = await Order.findOne({
+      _id: orderId,
+      userId: String(userId),
+    });
 
     if (!order) {
       return res.status(404).json({
         success: false,
-        message:
-          "Order not found",
+        message: "Order not found",
       });
     }
 
-    // Make sure this order belongs to
-    // the currently logged-in user
+    console.log(
+      "DATABASE RAZORPAY ORDER ID:",
+      order.razorpayOrderId
+    );
+
+    // ==========================================
+    // MAKE SURE RAZORPAY ORDER MATCHES
+    // ==========================================
+
     if (
-      String(order.userId) !==
-      String(userId)
+      order.razorpayOrderId !==
+      razorpay_order_id
     ) {
-      return res.status(403).json({
+      return res.status(400).json({
         success: false,
-        message:
-          "You are not authorized to verify this order",
+        message: "Razorpay order ID mismatch",
       });
     }
 
     // ==========================================
-    // UPDATE OUR DATABASE ORDER
+    // VERIFY RAZORPAY SIGNATURE
+    // ==========================================
+
+    const body =
+      `${order.razorpayOrderId}|${razorpay_payment_id}`;
+
+    const expectedSignature =
+      crypto
+        .createHmac(
+          "sha256",
+          process.env.RAZOR_PAY_SECRET
+        )
+        .update(body)
+        .digest("hex");
+
+    const signaturesMatch =
+      expectedSignature === razorpay_signature;
+
+    if (!signaturesMatch) {
+      console.error(
+        "❌ INVALID RAZORPAY SIGNATURE"
+      );
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Razorpay payment signature",
+      });
+    }
+
+    console.log(
+      "✅ RAZORPAY SIGNATURE VERIFIED"
+    );
+
+    // ==========================================
+    // UPDATE ORDER
     // ==========================================
 
     order.payment = true;
-
     order.status = "Processing";
-
-    if (razorpay_payment_id) {
-      order.razorpayPaymentId =
-        razorpay_payment_id;
-    }
+    order.razorpayPaymentId =
+      razorpay_payment_id;
+    order.razorpaySignature =
+      razorpay_signature;
 
     await order.save();
 
@@ -631,7 +648,7 @@ export const verifyrazorpayPayment = async (req, res) => {
     );
 
     console.log(
-      "✅ PAYMENT VERIFIED"
+      "✅ PAYMENT VERIFIED SUCCESSFULLY"
     );
 
     console.log(
@@ -645,15 +662,12 @@ export const verifyrazorpayPayment = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-
       message:
-        "Payment verified and order updated successfully",
-
+        "Payment verified successfully",
       order,
     });
 
   } catch (error) {
-
     console.error(
       "❌ ERROR VERIFYING RAZORPAY PAYMENT:",
       error
@@ -661,12 +675,9 @@ export const verifyrazorpayPayment = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-
       message:
         "Error verifying Razorpay payment",
-
-      error:
-        error.message,
+      error: error.message,
     });
   }
 };
