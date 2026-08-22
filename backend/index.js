@@ -1,38 +1,43 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
-import path from "path";
-import { fileURLToPath } from "url";
-import connectDB from "./config/db.js";
-import cookieParser from "cookie-parser";
 import cors from "cors";
+import "dotenv/config";
+import cookieParser from "cookie-parser";
+import connectDB from "./config/mongodb.js";
 
-import authroute from "./routes/authroute.js";
-import userRoute from "./routes/userRoute.js";
+import authRouter from "./routes/authroute.js";
 import productRouter from "./routes/productroute.js";
-import cartRouter from "./routes/cartRoutes.js";
+import cartRouter from "./routes/cartroute.js";
 import orderRouter from "./routes/orderroute.js";
 
-const app = express();
+import path from "path";
+import { fileURLToPath } from "url";
 
-// ==================================================
+// =====================================================
 // PATH SETUP
-// ==================================================
+// =====================================================
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// AUREVIA/.frontend/dist
-const frontendPath = path.join(__dirname, "../.frontend/dist");
+const app = express();
 
-console.log("Frontend path:", frontendPath);
+// =====================================================
+// DATABASE
+// =====================================================
 
-// ==================================================
+connectDB();
+
+// =====================================================
 // MIDDLEWARE
-// ==================================================
+// =====================================================
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// =====================================================
+// CORS
+// =====================================================
 
 app.use(
   cors({
@@ -40,59 +45,110 @@ app.use(
       "https://aurevia-2.onrender.com",
       "https://aurevia-3.onrender.com",
       "http://localhost:5173",
-      "http://localhost:5174"
+      "http://localhost:5174",
     ],
-    credentials: true
+    credentials: true,
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// ==================================================
+// =====================================================
 // API ROUTES
-// ==================================================
+// =====================================================
 
-app.use("/api/auth", authroute);
-app.use("/api/user", userRoute);
+app.use("/api/auth", authRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 
-// ==================================================
-// SERVE REACT FRONTEND
-// ==================================================
+// =====================================================
+// FRONTEND PATH
+// =====================================================
 
-app.use(express.static(frontendPath));
+const frontendPath = path.join(
+  __dirname,
+  "../.frontend/dist"
+);
 
-// ==================================================
+console.log("Frontend path:", frontendPath);
+
+// =====================================================
+// SERVE FRONTEND STATIC FILES
+// =====================================================
+
+app.use(
+  express.static(frontendPath)
+);
+
+// =====================================================
 // REACT ROUTER FALLBACK
-// ==================================================
-
-// This makes routes such as:
-// /products
-// /cart
+// IMPORTANT FOR REFRESHING:
 // /profile
-// /orders
-// work even after refreshing the browser.
+// /profile/collection
+// /profile/orders
+// /profile/cart
+// /login
+// /signup
+// etc.
+// =====================================================
 
 app.use((req, res, next) => {
-  if (req.method === "GET" && !req.path.startsWith("/api/")) {
-    return res.sendFile(
-      path.join(frontendPath, "index.html")
-    );
+  // Never send index.html for API requests
+  if (
+    req.method !== "GET" ||
+    req.path.startsWith("/api/")
+  ) {
+    return next();
   }
 
-  next();
+  return res.sendFile(
+    path.join(frontendPath, "index.html"),
+    (err) => {
+      if (err) {
+        console.error(
+          "❌ Error serving index.html:",
+          err
+        );
+
+        return res.status(500).send(
+          "Frontend application could not be loaded."
+        );
+      }
+    }
+  );
 });
 
-// ==================================================
-// SERVER
-// ==================================================
+// =====================================================
+// 404 HANDLER
+// =====================================================
 
-const PORT = process.env.PORT || 8000;
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
+// =====================================================
+// ERROR HANDLER
+// =====================================================
+
+app.use((err, req, res, next) => {
+  console.error("❌ SERVER ERROR:", err);
+
+  res.status(500).json({
+    success: false,
+    message: "Internal server error",
+  });
+});
+
+// =====================================================
+// SERVER
+// =====================================================
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  connectDB();
+  console.log(
+    `🚀 Server running on port ${PORT}`
+  );
 });
