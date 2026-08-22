@@ -28,95 +28,74 @@ function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const fetchOrders = async () => {
+  try {
+    setLoading(true);
+    setError("");
+
+    if (!serverurl) {
+      setError("Server URL is not configured.");
+      setLoading(false);
+      return;
+    }
+
+    console.log("================================");
+    console.log("📦 FETCHING USER ORDERS");
+    console.log("🌐 SERVER URL:", serverurl);
+    console.log("================================");
+
+    const response = await axios.get(
+      `${serverurl}/api/order/userorders`,
+      {
+        withCredentials: true,
+      }
+    );
+
+    console.log("✅ ORDERS RESPONSE:", response.data);
+
+    if (response.data?.success) {
+      const fetchedOrders = response.data.orders || [];
+
+      fetchedOrders.sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+
+      setOrders(fetchedOrders);
+    } else {
+      setError(
+        response.data?.message ||
+          "Unable to fetch orders."
+      );
+    }
+  } catch (err) {
+    console.error("❌ FETCH ORDERS ERROR:", err);
+    console.error(
+      "Backend response:",
+      err?.response?.data
+    );
+
+    if (err?.response?.status === 401) {
+      setError(
+        "Your login session has expired. Please login again."
+      );
+      return;
+    }
+
+    setError(
+      err?.response?.data?.message ||
+        "Something went wrong while fetching your orders."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   // =========================================================
   // FETCH USER ORDERS
   // =========================================================
 
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      setError("");
 
-
-        setError(
-          "Server URL is not configured."
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      console.log(
-        "================================"
-      );
-
-      console.log("📦 FETCHING USER ORDERS");
-      console.log(
-        "🌐 SERVER URL:",
-        serverurl
-      );
-
-      console.log(
-        "================================"
-      );
-
-      const response = await axios.get(
-        `/api/order/userorders`,
-        {
-          withCredentials: true,
-        }
-      );
-
-      console.log(
-        "✅ ORDERS RESPONSE:",
-        response.data
-      );
-
-      if (response.data?.success) {
-        const fetchedOrders =
-          response.data.orders || [];
-
-        fetchedOrders.sort(
-          (a, b) =>
-            new Date(b.date) -
-            new Date(a.date)
-        );
-
-        setOrders(fetchedOrders);
-      } else {
-        setError(
-          response.data?.message ||
-            "Unable to fetch orders."
-        );
-      }
-    } catch (err) {
-      console.error(
-        "❌ FETCH ORDERS ERROR:",
-        err
-      );
-
-      console.error(
-        "Backend response:",
-        err?.response?.data
-      );
-
-      if (err?.response?.status === 401) {
-        setError(
-          "Your login session has expired. Please login again."
-        );
-
-        return;
-      }
-
-      setError(
-        err?.response?.data?.message ||
-          "Something went wrong while fetching your orders."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   // =========================================================
   // FETCH WHEN PAGE LOADS
