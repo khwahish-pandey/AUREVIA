@@ -1,16 +1,20 @@
-import express from "express";
-import cors from "cors";
-import "dotenv/config";
-import cookieParser from "cookie-parser";
-import connectDB from "./config/token.js";
+import dotenv from "dotenv";
+dotenv.config();
 
-import authRouter from "./routes/authroute.js";
+import express from "express";
+import connectDB from "./config/db.js";
+import cookieParser from "cookie-parser";
+import authroute from "./routes/authroute.js";
+import cors from "cors";
+import userRoute from "./routes/userRoute.js";
 import productRouter from "./routes/productroute.js";
-import cartRouter from "./routes/cartroute.js";
+import cartRouter from "./routes/cartRoutes.js";
 import orderRouter from "./routes/orderroute.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
+
+const app = express();
 
 // =====================================================
 // PATH SETUP
@@ -18,22 +22,6 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const app = express();
-
-// =====================================================
-// DATABASE
-// =====================================================
-
-connectDB();
-
-// =====================================================
-// MIDDLEWARE
-// =====================================================
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 // =====================================================
 // CORS
@@ -46,16 +34,51 @@ app.use(
       "https://aurevia-3.onrender.com",
       "http://localhost:5173",
       "http://localhost:5174",
+      "http://localhost:5175",
     ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// =====================================================
+// BODY PARSERS
+// =====================================================
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// =====================================================
+// JSON ERROR HANDLER
+// =====================================================
+
+app.use((err, req, res, next) => {
+  if (
+    err instanceof SyntaxError &&
+    err.status === 400 &&
+    "body" in err
+  ) {
+    console.error(
+      "Bad JSON received. Check your request body."
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: "Invalid JSON format",
+    });
+  }
+
+  next(err);
+});
 
 // =====================================================
 // API ROUTES
 // =====================================================
 
-app.use("/api/auth", authRouter);
+app.use("/api/auth", authroute);
+app.use("/api/user", userRoute);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
@@ -72,49 +95,50 @@ const frontendPath = path.join(
 console.log("Frontend path:", frontendPath);
 
 // =====================================================
-// SERVE FRONTEND STATIC FILES
+// SERVE REACT / VITE STATIC FILES
 // =====================================================
 
-app.use(
-  express.static(frontendPath)
-);
+app.use(express.static(frontendPath));
 
 // =====================================================
 // REACT ROUTER FALLBACK
-// IMPORTANT FOR REFRESHING:
+// =====================================================
+// This is what allows direct refreshes of:
 // /profile
 // /profile/collection
 // /profile/orders
 // /profile/cart
+// /profile/ai
 // /login
 // /signup
 // etc.
 // =====================================================
 
 app.use((req, res, next) => {
-  // Never send index.html for API requests
   if (
-    req.method !== "GET" ||
-    req.path.startsWith("/api/")
+    req.method === "GET" &&
+    !req.path.startsWith("/api/")
   ) {
-    return next();
+    return res.sendFile(
+      path.join(frontendPath, "index.html"),
+      (err) => {
+        if (err) {
+          console.error(
+            "❌ Error serving React index.html:",
+            err
+          );
+
+          if (!res.headersSent) {
+            res.status(500).send(
+              "Frontend application could not be loaded."
+            );
+          }
+        }
+      }
+    );
   }
 
-  return res.sendFile(
-    path.join(frontendPath, "index.html"),
-    (err) => {
-      if (err) {
-        console.error(
-          "❌ Error serving index.html:",
-          err
-        );
-
-        return res.status(500).send(
-          "Frontend application could not be loaded."
-        );
-      }
-    }
-  );
+  next();
 });
 
 // =====================================================
@@ -129,11 +153,15 @@ app.use((req, res) => {
 });
 
 // =====================================================
-// ERROR HANDLER
+// GLOBAL ERROR HANDLER
 // =====================================================
 
 app.use((err, req, res, next) => {
   console.error("❌ SERVER ERROR:", err);
+
+  if (res.headersSent) {
+    return next(err);
+  }
 
   res.status(500).json({
     success: false,
@@ -145,10 +173,12 @@ app.use((err, req, res, next) => {
 // SERVER
 // =====================================================
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => {
   console.log(
     `🚀 Server running on port ${PORT}`
   );
+
+  connectDB();
 });
