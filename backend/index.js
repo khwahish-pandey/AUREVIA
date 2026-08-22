@@ -114,6 +114,11 @@ app.use(express.static(frontendPath));
 // etc.
 // =====================================================
 
+
+// =====================================================
+// REACT ROUTER FALLBACK
+// =====================================================
+
 app.use((req, res, next) => {
   if (
     req.method === "GET" &&
@@ -121,6 +126,9 @@ app.use((req, res, next) => {
   ) {
     return res.sendFile(
       path.join(frontendPath, "index.html"),
+      {
+        dotfiles: "allow",
+      },
       (err) => {
         if (err) {
           console.error(
