@@ -358,7 +358,7 @@ function PlaceOrder() {
 
       const response =
         await axios.post(
-          `${serverurl}/api/order/razorpay`,
+          `/api/order/razorpay`,
           orderData,
           {
             withCredentials: true,
