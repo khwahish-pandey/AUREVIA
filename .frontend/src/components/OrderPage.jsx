@@ -38,10 +38,6 @@ function Orders() {
       setLoading(true);
       setError("");
 
-      if (!serverurl) {
-        console.error(
-          "serverurl is missing from AuthContext"
-        );
 
         setError(
           "Server URL is not configured."
@@ -66,7 +62,7 @@ function Orders() {
       );
 
       const response = await axios.get(
-        `${serverurl}/api/order/userorders`,
+        `/api/order/userorders`,
         {
           withCredentials: true,
         }
