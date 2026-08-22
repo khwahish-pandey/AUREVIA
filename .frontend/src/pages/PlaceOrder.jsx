@@ -460,7 +460,7 @@ function PlaceOrder() {
 
             const verifyResponse =
               await axios.post(
-                `/api/order/verifyrazorpay`,
+                `${serverurl}/api/order/verifyrazorpay`,
                 {
                   razorpay_payment_id:
                     razorpayResponse.razorpay_payment_id,
