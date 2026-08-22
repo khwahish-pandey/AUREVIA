@@ -8,36 +8,25 @@ cloudinary.config({
 });
 
 const uploadOnCloudinary = async (filePath) => {
-  if (!filePath) {
-    throw new Error("File path is required for Cloudinary upload");
-  }
-
   try {
-    console.log("☁️ Uploading to Cloudinary:", filePath);
+    if (!filePath) {
+      throw new Error("File path is required for upload");
+    }
 
-    const uploadResult = await cloudinary.uploader.upload(filePath, {
-      resource_type: "image",
-    });
+    const uploadResult = await cloudinary.uploader.upload(filePath);
 
-    console.log("✅ Cloudinary upload successful");
-
-    // Delete temporary file safely
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
     return uploadResult.secure_url;
-
   } catch (error) {
-    console.error("❌ Cloudinary upload failed:");
-    console.error(error);
+    console.error("❌ Cloudinary upload failed:", error);
 
-    // Delete temporary file safely
-    if (fs.existsSync(filePath)) {
+    if (filePath && fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
-    // IMPORTANT: don't silently return undefined
     throw error;
   }
 };
