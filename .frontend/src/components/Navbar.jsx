@@ -455,8 +455,7 @@ export function Navbar({
       );
 
       const cleanServerUrl =
-        serverurl ||
-        "http://localhost:8000";
+       "https://aurevia-2.onrender.com";
 
       try {
 
